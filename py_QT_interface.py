@@ -8,6 +8,7 @@ from Hunter_Summons_warlock import Warlock
 from Rogue_Paladin import Rogue, Paladin
 from Shaman_Druid_Priest import Druid, Priest
 from Warrior_Mage import Warrior, Mage
+
 TEAMS = 4
 
 units = {
@@ -140,7 +141,7 @@ class Window(QWidget):
         self.right_console = QLabel(
             'Here will be info about classes ans abilities                                                            ',
             self)
-        self.right_console.move(1000, 500)
+        self.right_console.move(1000, 800)
 
         self.classes_to_choose = [QPushButton("", self) for i in range(8)]
         for i in range(4):
@@ -148,7 +149,8 @@ class Window(QWidget):
                 self.classes_to_choose[i * 2 + j].resize(60, 60)
                 self.classes_to_choose[i * 2 + j].move(j * 60 + 1000, i * 60 + 50)
                 self.classes_to_choose[i * 2 + j].clicked.connect(self.ChooseClass)
-                self.classes_to_choose[i * 2 + j].setIcon(QtGui.QIcon(pictures_of_classes[names_of_units[i*2 + j + 1]]))
+                self.classes_to_choose[i * 2 + j].setIcon(
+                    QtGui.QIcon(pictures_of_classes[names_of_units[i * 2 + j + 1]]))
                 self.classes_to_choose[i * 2 + j].setIconSize(QtCore.QSize(60, 60))
                 self.cur_command = 0
 
@@ -236,6 +238,16 @@ class Window(QWidget):
                 if self.coords_players[i] in self.placement_players_check[j]:
                     k = j
             self.buttons_of_players[i].setStyleSheet(colours_of_teams[k + 1])
+
+        self.clean()
+
+    def clean(self):
+        for i in range(TEAMS):
+            self.commands[i].move(-100, -100)
+        for i in range(8):
+            self.classes_to_choose[i].move(-100, -100)
+        self.stop_button.move(-100, -100)
+        self.right_console.setText('Here will be info about classes ans abilities')
 
 
 def except_hook(cls, exception, traceback):
