@@ -8,6 +8,7 @@ from Hunter_Summons_warlock import Warlock
 from Rogue_Paladin import Rogue, Paladin
 from Shaman_Druid_Priest import Druid, Priest
 from Warrior_Mage import Warrior, Mage
+TEAMS = 4
 
 units = {
     1: Warrior,
@@ -20,6 +21,13 @@ units = {
     8: Druid,
     9: Priest
 
+}
+
+colours_of_teams = {
+    1: 'QPushButton {background-color: red;}',
+    2: 'QPushButton {background-color: blue;}',
+    3: 'QPushButton {background-color: green;}',
+    4: 'QPushButton {background-color: yellow;}'
 }
 
 description_of_units = {
@@ -44,7 +52,28 @@ landscape = {
 }
 
 pictures_of_classes = {
-    'Warrior': 'img/all.png'
+    'Warrior': 'img/Warrior.png',
+    'Mage': 'img/Mage.png',
+    "Rogue": 'img/Rogue.png',
+    "Paladin": 'img/Paladin.png',
+    "Hunter": 'img/Hunter.png',
+    "Warlock": 'img/Warlock.png',
+    'Shaman': 'img/Warrior.png',
+    'Druid': 'img/Warrior.png',
+    'Priest': 'img/Warrior.png'
+}
+
+names_of_units = {
+    1: 'Warrior',
+    2: 'Mage',
+    3: "Rogue",
+    4: "Paladin",
+    5: "Hunter",
+    6: "Warlock",
+    7: 'Shaman',
+    8: 'Druid',
+    9: 'Priest'
+
 }
 
 
@@ -56,11 +85,12 @@ class Window(QWidget):
         self.coords_to_buttons = {}
         self.list_of_players = []
         self.players = [[], [], [], []]
-        self.placement_players = [[[0, 0], [0, 1]], [[9, 0], [9, 1]], [[9, 9], [9, 8]], [[0, 9], [1, 9]]]
+        self.placement_players = [[[0, 0], [0, 1]], [[9, 9], [9, 8]], [[9, 0], [9, 1]], [[0, 9], [1, 9]]]
+        self.placement_players_check = [[[0, 0], [0, 1]], [[9, 9], [9, 8]], [[9, 0], [9, 1]], [[0, 9], [1, 9]]]
         self.cnt_teams = 0
+        self.pref_of_players = [0, 0, 0, 0]
         self.coords_players = []
         self.clicked_at_class = [False for _ in range(8)]
-        self.buttons_of_players = []
 
         super().__init__()
         self.initUI()
@@ -104,24 +134,26 @@ class Window(QWidget):
                     mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 self.map_points[mapa[i * x + j]] = landscape[number] + " " + str(j) + ";" + str(i)
                 self.coords_to_buttons[(j, i)] = mapa[i * x + j]
+
         self.console = QLabel('Here will be info about tiles', self)
         self.console.move(50, 900)
         self.right_console = QLabel(
             'Here will be info about classes ans abilities                                                            ',
             self)
         self.right_console.move(1000, 500)
-        self.classes_to_choose = [QPushButton("", self) for i in range(8)]
 
+        self.classes_to_choose = [QPushButton("", self) for i in range(8)]
         for i in range(4):
             for j in range(2):
                 self.classes_to_choose[i * 2 + j].resize(60, 60)
                 self.classes_to_choose[i * 2 + j].move(j * 60 + 1000, i * 60 + 50)
                 self.classes_to_choose[i * 2 + j].clicked.connect(self.ChooseClass)
-                self.classes_to_choose[i * 2 + j].setIcon(QtGui.QIcon('img/all.png'))
+                self.classes_to_choose[i * 2 + j].setIcon(QtGui.QIcon(pictures_of_classes[names_of_units[i*2 + j + 1]]))
                 self.classes_to_choose[i * 2 + j].setIconSize(QtCore.QSize(60, 60))
                 self.cur_command = 0
-        self.commands = [QPushButton(str(i + 1), self) for i in range(4)]
-        for i in range(4):
+
+        self.commands = [QPushButton(str(i + 1), self) for i in range(TEAMS)]
+        for i in range(TEAMS):
             self.commands[i].resize(60, 60)
             self.commands[i].move(900 + i * 60, 330)
             self.commands[i].clicked.connect(self.ChooseTeam)
@@ -131,6 +163,12 @@ class Window(QWidget):
         self.stop_button.move(1040, 400)
         self.stop_button.clicked.connect(self.stop)
         self.stop_button.setStyleSheet('QPushButton {background-color: red; color: white;}')
+
+        self.buttons_of_players = [QPushButton('', self) for i in range(8)]
+        for i in range(8):
+            self.buttons_of_players[i].resize(50, 50)
+            self.buttons_of_players[i].move(-100, -100)
+            self.buttons_of_players[i].clicked.connect(self.rightConsole)
 
     def mapButtons(self):
         s = ''
@@ -166,7 +204,7 @@ class Window(QWidget):
             self.right_console.setText(description_of_units[self.classes_to_choose.index(self.sender()) + 1])
 
     def ChooseTeam(self):
-        for i in range(4):
+        for i in range(TEAMS):
             self.commands[i].setStyleSheet('QPushButton {background-color: None;}')
         self.cur_command = self.commands.index(self.sender())
         self.sender().setStyleSheet('QPushButton {background-color: #252850; color: white;}')
@@ -182,20 +220,22 @@ class Window(QWidget):
             return 0
 
     def stop(self):
-        if not self.buttons_of_players:
-            for i in range(len(self.list_of_players)):
-                self.buttons_of_players.append(QPushButton('', self))
-        print(self.buttons_of_players)
-        a = QPushButton('', self)
+        self.pref_of_players[0] = len(self.players[0])
+        for i in range(1, TEAMS):
+            self.pref_of_players[i] = self.pref_of_players[i - 1] + len(self.players[i])
+        self.pref_of_players = [0] + self.pref_of_players
+
+        for i in range(8 - len(self.list_of_players)):
+            self.buttons_of_players = self.buttons_of_players[:-1]
+        k = 0
         for i in range(len(self.buttons_of_players)):
-            self.buttons_of_players[i].resize(50, 50)
-            print(self.buttons_of_players[i].x(), self.buttons_of_players[i].y())
-            # self.buttons_of_players[i].move(50 + self.coords_players[i][0] * 80, 50 + self.coords_players[i][1] * 80)
-            self.buttons_of_players[i].move(1100, 600)
-            self.buttons_of_players[i].clicked.connect(self.rightConsole)
+            self.buttons_of_players[i].move(65 + self.coords_players[i][0] * 80, 65 + self.coords_players[i][1] * 80)
             self.buttons_of_players[i].setIcon(QtGui.QIcon(pictures_of_classes[self.list_of_players[i].name]))
-            self.buttons_of_players[i].setIconSize(QtCore.QSize(50, 50))
-            print(self.buttons_of_players[i].x(), self.buttons_of_players[i].y())
+            self.buttons_of_players[i].setIconSize(QtCore.QSize(45, 45))
+            for j in range(TEAMS):
+                if self.coords_players[i] in self.placement_players_check[j]:
+                    k = j
+            self.buttons_of_players[i].setStyleSheet(colours_of_teams[k + 1])
 
 
 def except_hook(cls, exception, traceback):

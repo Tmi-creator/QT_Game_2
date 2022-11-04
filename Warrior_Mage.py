@@ -41,7 +41,7 @@ class Warrior(Unit):  # armor dd
 
 class Mage(Unit):  # super dd
     def __init__(self):
-        super().__init__(name="Mage", hp=100, atk=40, mana=100, range=3, first_skill_num=2048, second_skill_num=10,
+        super().__init__(name="Mage", hp=100, atk=40, mana=100, range=3, move=2, first_skill_num=2048, second_skill_num=10,
                          third_skill_num=15)
 
     # self.hp = 100
