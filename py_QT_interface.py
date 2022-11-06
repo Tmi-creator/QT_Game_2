@@ -10,6 +10,7 @@ from Shaman_Druid_Priest import Druid, Priest
 from Warrior_Mage import Warrior, Mage
 
 TEAMS = 4
+EPS = 1e-6
 
 units = {
     1: Warrior,
@@ -92,6 +93,7 @@ class Window(QWidget):
         self.pref_of_players = [0, 0, 0, 0]
         self.coords_players = []
         self.clicked_at_class = [False for _ in range(8)]
+        self.turn = 0
 
         super().__init__()
         self.initUI()
@@ -100,48 +102,53 @@ class Window(QWidget):
 
         self.setGeometry(2100, 2100, 2100, 2100)
         QWidget.__init__(self)
-        mapa = [QPushButton("", self) for i in range(100)]
-        x = int(len(mapa) ** 0.5)
+        self.mapa = [QPushButton("", self) for _ in range(100)]
+        self.map_landscape = [0 for _ in range(100)]
+        x = int(len(self.mapa) ** 0.5)
         for i in range(x):
             for j in range(x):
-                mapa[i * x + j].resize(80, 80)
-                mapa[i * x + j].move(j * 80 + 50, i * 80 + 50)
-                mapa[i * x + j].clicked.connect(self.mapButtons)
+                self.mapa[i * x + j].resize(80, 80)
+                self.mapa[i * x + j].move(j * 80 + 50, i * 80 + 50)
+                self.mapa[i * x + j].clicked.connect(self.mapButtons)
 
                 number = randint(1, 100)
                 if number < 50:
                     number = 1
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/grass.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/grass.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 if 50 <= number < 65:
                     number = 2
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/forest.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/forest.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 if 65 <= number < 80:
                     number = 3
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/hill.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/hill.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 if 80 <= number < 90:
                     number = 4
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/destroyed_city.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/destroyed_city.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 if 90 <= number < 100:
                     number = 5
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/lake.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/lake.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
                 if number == 100:
                     number = 6
-                    mapa[i * x + j].setIcon(QtGui.QIcon('img/mountain.jpg'))
-                    mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
-                self.map_points[mapa[i * x + j]] = landscape[number] + " " + str(j) + ";" + str(i)
-                self.coords_to_buttons[(j, i)] = mapa[i * x + j]
+                    self.mapa[i * x + j].setIcon(QtGui.QIcon('img/mountain.jpg'))
+                    self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                self.map_landscape[i * x + j] = number
+                self.map_points[self.mapa[i * x + j]] = landscape[number] + " " + str(j) + ";" + str(i)
+                self.coords_to_buttons[(j, i)] = self.mapa[i * x + j]
 
         self.console = QLabel('Here will be info about tiles', self)
         self.console.move(50, 900)
         self.right_console = QLabel(
-            'Here will be info about classes ans abilities                                                            ',
+            'Here will be info about classes                                                                    '
+            '                                                 ',
             self)
         self.right_console.move(1000, 800)
+        self.skill_console = QLabel('Here will be info about abilities', self)
+        self.skill_console.move(-100, -600)
 
         self.classes_to_choose = [QPushButton("", self) for i in range(8)]
         for i in range(4):
@@ -172,28 +179,78 @@ class Window(QWidget):
             self.buttons_of_players[i].move(-100, -100)
             self.buttons_of_players[i].clicked.connect(self.rightConsole)
 
+        self.skills = [QPushButton('', self) for _ in range(4)]
+        for i in range(4):
+            self.skills[i].move(-100, -100)
+            self.skills[i].resize(80, 80)
+            self.skills[i].setStyleSheet(
+                'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
+                ' stop: 0 rgba(152,0,2,255), stop: 0.2 rgba(152,0,2,125), stop: 0.4 rgba(152,0,2,0));'
+                ' color: white;}')
+            self.skills[i].setIcon(QtGui.QIcon('img/Warrior.png'))
+            self.skills[i].setIconSize(QtCore.QSize(70, 70))
+            self.skills[i].clicked.connect(self.descriprionOfSkills)
+
+        self.cur_player = QPushButton("", self)
+        self.cur_player.move(-100, -100)
+        self.cur_team_player = 1
+
+        self.move_button = QPushButton('MOVE', self)
+        self.attack_button = QPushButton('ATTACK', self)
+        self.move_button.move(-1000, -500)
+        self.attack_button.move(-1100, -500)
+        self.move_button.clicked.connect(self.move_player)
+        self.attack_button.clicked.connect(self.attack)
+        self.ismove = False
+        self.isattack = False
+        self.attack_button.setStyleSheet(
+            'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
+            ' stop: 0 rgba(255,2,0,255), stop: 0.2 rgba(195,2,0,125), stop: 0.4 rgba(155,2,0,0));'
+            ' color: white;}')
+        self.move_button.setStyleSheet(
+            'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
+            ' stop: 0 rgba(66,170,255,255), stop: 0.2 rgba(66,170,255,125), stop: 0.4 rgba(66,170,255,0));'
+            ' color: white;}')
+
+        self.turn_on_all = QLabel(str(self.turn) + "           ", self)
+        self.turn_on_all.move(10, 10)
+        self.coords_to_move = [0, 0]
+        self.button_to_attack = QPushButton('', self)
+        self.number_attack = 0
+        self.button_to_attack.move(-100, -100)
+
     def mapButtons(self):
-        s = ''
-        s += self.map_points[self.sender()]
-        for i in range(len(self.list_of_players)):
-            try:
-                if self.sender() == self.coords_to_buttons[self.coords_players[i]]:
-                    s += f'{i.name}, hp:{i.hp}, atk:{i.atk}, mana:{i.mana}, range:{i.range}, move:{i.move}'
-                    self.rightConsole()
-            except:
-                pass
-        self.console.setText(s)
-        pass
+        if self.ismove:
+            self.coords_to_move = list(map(int, self.map_points[self.sender()][-4:].split(';')))
+            self.move_player(from_map=True)
+        else:
+            s = ''
+            s += self.map_points[self.sender()]
+            self.console.setText(s)
 
     def rightConsole(self):
-        pass
+        player = self.list_of_players[self.buttons_of_players.index(self.sender())]
+        self.cur_player = self.sender()
+        self.right_console.setText(
+            f'player {self.buttons_of_players.index(self.sender()) + 1}, {player.name},'
+            f' hp: {player.hp}, atk: {player.atk}, mana: {player.mana}, range: {player.range}, move: {player.move}')
+        if self.turn % len(self.list_of_players) == self.buttons_of_players.index(self.sender()):
+            self.move_button.move(1000, 500)
+            self.attack_button.move(1200, 500)
+        else:
+            self.ismove = False
+            self.move_button.move(-100, -100)
+            self.attack_button.move(-100, -100)
+            if self.isattack:
+                self.button_to_attack = self.sender()
+                self.attack(from_console=True)
 
     def ChooseClass(self):
         if self.clicked_at_class[self.classes_to_choose.index(self.sender())]:
             result = self.placeUnits()
             if result:
                 self.players[self.cur_command].append(units[self.classes_to_choose.index(self.sender()) + 1]())
-                self.list_of_players.append(units[self.classes_to_choose.index(self.sender()) + 1]())
+                self.list_of_players.append(self.players[self.cur_command][-1])
                 print(self.list_of_players)
                 self.clicked_at_class[self.classes_to_choose.index(self.sender())] = False
                 self.sender().setStyleSheet('QPushButton {background-color: #None;}')
@@ -238,7 +295,7 @@ class Window(QWidget):
                 if self.coords_players[i] in self.placement_players_check[j]:
                     k = j
             self.buttons_of_players[i].setStyleSheet(colours_of_teams[k + 1])
-
+        self.skill_console.move(1000, 600)
         self.clean()
 
     def clean(self):
@@ -247,7 +304,106 @@ class Window(QWidget):
         for i in range(8):
             self.classes_to_choose[i].move(-100, -100)
         self.stop_button.move(-100, -100)
-        self.right_console.setText('Here will be info about classes ans abilities')
+        self.right_console.setText('Here will be info about players')
+        for i in range(2):
+            for j in range(2):
+                self.skills[i * 2 + j].move(1000 + i * 80, j * 80 + 300)
+
+    def descriprionOfSkills(self):
+        for i in range(4):
+            self.skills[i].setStyleSheet(
+                'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
+                ' stop: 0 rgba(152,0,2,255), stop: 0.2 rgba(152,0,2,125), stop: 0.4 rgba(152,0,2,0));'
+                ' color: white;}')
+        self.sender().setStyleSheet(
+            'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
+            ' stop: 0 rgba(0,2,152,255), stop: 0.2 rgba(0,2,152,125), stop: 0.4 rgba(0,2,152,0));'
+            ' color: white;}')
+        self.number_attack = self.skills.index(self.sender())
+        if self.cur_player in self.buttons_of_players:
+            self.skill_console.setText(
+                self.list_of_players[self.buttons_of_players.index(self.cur_player)].descriptions[1 +
+                                                                                                  self.skills.index(
+                                                                                                      self.sender())])
+        else:
+            self.skill_console.setText('No Player to see his abilities')
+
+    def move_player(self, from_map=False):
+
+        if from_map:
+            coords_now = self.coords_players[self.buttons_of_players.index(self.cur_player)]
+            move_player = self.list_of_players[self.buttons_of_players.index(self.cur_player)].move
+            if1 = self.map_landscape[
+                      self.coords_to_move[1] * int(len(self.mapa) ** 0.5) + self.coords_to_move[0]] not in [5, 6]
+            print(self.map_landscape[
+                      self.coords_to_move[1] * int(len(self.mapa) ** 0.5) + self.coords_to_move[0]])
+            if abs(coords_now[0] - self.coords_to_move[0]) + abs(
+                    coords_now[1] - self.coords_to_move[1]) <= move_player and if1:
+                self.coords_players[self.buttons_of_players.index(self.cur_player)] = self.coords_to_move
+                self.cur_player.move(65 + self.coords_to_move[0] * 80, 65 + self.coords_to_move[1] * 80)
+                self.turn_f()
+                self.ismove = False
+            else:
+                self.right_console.setText("Error, can't move here")
+        else:
+            if self.ismove:
+                self.ismove = False
+            else:
+                self.ismove = True
+
+    def attack(self, from_console=False):
+        if from_console:
+            player_attack = self.list_of_players[self.turn % len(self.list_of_players)]
+            player_attacking = self.list_of_players[self.buttons_of_players.index(self.button_to_attack)]
+            coords_attacker = self.coords_players[self.turn % len(self.list_of_players)]
+            coords_attacking = self.coords_players[self.buttons_of_players.index(self.button_to_attack)]
+            if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
+                    coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
+                player_attack.skills[self.number_attack + 1](player_attacking)
+                self.isattack = False
+                if player_attacking.hp <= 0:
+                    self.right_console.setText(f'player {self.list_of_players.index(player_attacking) + 1} died')
+                    self.button_to_attack.move(-100, -100)
+                    self.list_of_players.remove(player_attacking)
+                    for i in range(4):
+                        try:
+                            self.players[i].remove(player_attacking)
+                        except:
+                            pass
+                    self.iswin()
+                self.turn_f()
+            else:
+                self.right_console.setText("Can't attack")
+                print(coords_attacker, coords_attacking, (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
+                    coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range)
+        else:
+            if self.isattack:
+                self.isattack = False
+            else:
+                self.isattack = True
+
+    def turn_f(self):
+        self.turn += 1
+        self.turn_on_all.setText(str(self.turn))
+        self.move_button.move(-100, -100)
+        self.attack_button.move(-100, -100)
+
+    def iswin(self):
+        alive = 0
+        for i in range(4):
+            if self.players[i]:
+                alive += 1
+        if alive in [0, 1]:
+            for i in self.mapa:
+                i.move(-100, -100)
+            for i in self.skills:
+                i.move(-100, -100)
+            for i in self.buttons_of_players:
+                i.move(-100, -100)
+            self.turn_on_all.move(-100, -100)
+            self.right_console.move(-100, -100)
+            self.console.move(-100, -100)
+            self.skill_console.move(-100, -100)
 
 
 def except_hook(cls, exception, traceback):
