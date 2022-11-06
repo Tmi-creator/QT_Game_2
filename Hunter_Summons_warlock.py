@@ -11,7 +11,10 @@ from Unit import Unit
 
 class Warlock(Unit):  # мазохист dd (Много, очень очень много) (can heal himself)
     def __init__(self):
-        super().__init__(hp=150, atk=20, mana=200, first_skill_num=1.1, second_skill_num=20, third_skill_num=30)
+        super().__init__(hp=150, atk=20, mana=200, first_skill_num=1.1, second_skill_num=20, third_skill_num=30,
+                         description_of_atk=f'atk, deals {self.atk} damage',
+                         description_of_first='', description_of_second='', description_of_third='', picture_atk='',
+                         picture_first='', picture_second='', picture_third='')
 
     # self.hp = 150
     # self.atk = 20
@@ -26,7 +29,7 @@ class Warlock(Unit):  # мазохист dd (Много, очень очень �
             ch = int(input("Введите кол-во атаки на хп"))
             if ch > self.hp:
                 target.hp -= self.hp * self.first_skill_num
-                self.hp -= self.hp-1
+                self.hp -= self.hp - 1
             else:
                 target.hp -= ch * self.first_skill_num
                 self.hp -= ch
