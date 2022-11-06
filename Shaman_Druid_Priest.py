@@ -8,7 +8,10 @@ class Shaman(Unit):  # totem dd healer Не будет такого класса
 
 class Druid(Unit):  # transformer dd healer
     def __init__(self):
-        super().__init__(hp=75, atk=10, mana=50, first_skill_num=0, second_skill_num=0, third_skill_num=0)
+        super().__init__(hp=75, atk=10, mana=50, first_skill_num=0, second_skill_num=0, third_skill_num=0,
+                         description_of_atk=f'atk, deals {self.atk} damage',
+                         description_of_first='', description_of_second='', description_of_third='', picture_atk='',
+                         picture_first='', picture_second='', picture_third='')
 
     # self.hp = 75
     # self.atk = 10
@@ -52,7 +55,10 @@ class Druid(Unit):  # transformer dd healer
 
 class Priest(Unit):  # super healer (can revive)
     def __init__(self):
-        super().__init__(hp=150, atk=20, mana=50, first_skill_num=80, second_skill_num=5, third_skill_num=5)
+        super().__init__(hp=150, atk=20, mana=50, first_skill_num=80, second_skill_num=5, third_skill_num=5,
+                         description_of_atk=f'atk, deals {self.atk} damage',
+                         description_of_first='', description_of_second='', description_of_third='', picture_atk='',
+                         picture_first='', picture_second='', picture_third='')
 
     # self.hp = 150
     # self.atk = 20
