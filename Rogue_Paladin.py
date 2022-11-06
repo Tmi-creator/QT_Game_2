@@ -4,7 +4,10 @@ from Unit import Unit
 
 class Rogue(Unit):
     def __init__(self):
-        super().__init__(hp=50, atk=60, mana=50, first_skill_num=75, second_skill_num=50, third_skill_num=10)
+        super().__init__(hp=50, atk=60, mana=50, first_skill_num=75, second_skill_num=50, third_skill_num=10,
+                         description_of_atk=f'atk, deals {self.atk} damage',
+                         description_of_first='', description_of_second='', description_of_third='', picture_atk='',
+                         picture_first='', picture_second='', picture_third='')
 
     # self.hp = 50
     # self.atk = 60
@@ -50,7 +53,10 @@ class Rogue(Unit):
 
 class Paladin(Unit):  # armor healer
     def __init__(self):
-        super().__init__(hp=150, atk=15, mana=75, first_skill_num=5, second_skill_num=40, third_skill_num=10)
+        super().__init__(hp=150, atk=15, mana=75, first_skill_num=5, second_skill_num=40, third_skill_num=10,
+                         description_of_atk=f'atk, deals {self.atk} damage',
+                         description_of_first='', description_of_second='', description_of_third='', picture_atk='',
+                         picture_first='', picture_second='', picture_third='')
 
     # self.hp = 150
     # self.atk = 15
@@ -84,4 +90,3 @@ class Paladin(Unit):  # armor healer
         else:
             print('No mana!')
             target.take_damage(self.atk * 0.5)
-
