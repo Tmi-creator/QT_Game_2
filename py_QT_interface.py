@@ -2,6 +2,7 @@ import sys
 from random import *
 
 from PyQt5 import QtGui, QtCore
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import *
 
 from Hunter_Summons_warlock import Warlock
@@ -103,8 +104,13 @@ class Window(QWidget):
 
     def initUI(self):
 
-        self.setGeometry(2100, 2100, 2100, 2100)
+        self.setGeometry(100, 100, 100, 100)
         QWidget.__init__(self)
+        self.background = QLabel('', self)
+        self.setWindowTitle('Tactics game at PyQt')
+        self.background.setPixmap(QPixmap('img/background.jpg'))
+        # self.background.resize(1000, 1000)
+        self.background.move(0, 0)
         self.mapa = [QPushButton("", self) for _ in range(100)]
         self.map_landscape = [0 for _ in range(100)]
         x = int(len(self.mapa) ** 0.5)
@@ -221,9 +227,9 @@ class Window(QWidget):
         self.button_to_attack = QPushButton('', self)
         self.number_attack = 0
         self.button_to_attack.move(-100, -100)
-        self.right_console.setStyleSheet("QLabel{font-size: 16pt;}")
-        self.console.setStyleSheet("QLabel{font-size: 16pt;}")
-        self.skill_console.setStyleSheet("QLabel{font-size: 16pt;}")
+        self.right_console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
+        self.console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
+        self.skill_console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
 
     def mapButtons(self):
         if self.ismove:
@@ -300,7 +306,7 @@ class Window(QWidget):
                 if self.coords_players[i] in self.placement_players_check[j]:
                     k = j
             self.buttons_of_players[i].setStyleSheet(colours_of_teams[k + 1])
-        self.skill_console.move(900, 600)
+        self.skill_console.move(900, 650)
         self.clean()
 
     def clean(self):
@@ -356,27 +362,31 @@ class Window(QWidget):
 
     def attack(self, from_console=False):
         if from_console:
-            player_attack = self.list_of_players[self.turn % len(self.list_of_players)]
+            player_attack = self.list_of_players[self.index_now]
             player_attacking = self.list_of_players[self.buttons_of_players.index(self.button_to_attack)]
-            coords_attacker = self.coords_players[self.turn % len(self.list_of_players)]
+            coords_attacker = self.coords_players[self.index_now]
             coords_attacking = self.coords_players[self.buttons_of_players.index(self.button_to_attack)]
-            if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
-                    coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
-                player_attack.skills[self.number_attack + 1](player_attacking)
-                self.isattack = False
-                if player_attacking.hp <= 0:
-                    self.right_console.setText(f'player {self.list_of_players.index(player_attacking) + 1} died')
-                    self.button_to_attack.move(-100, -100)
-                    self.death.append(player_attacking)
-                    for i in range(4):
-                        try:
-                            self.players[i].remove(player_attacking)
-                        except:
-                            pass
-                    self.iswin()
-                self.turn_f()
+            if player_attack.mana >= player_attack.manacosts[self.number_attack + 1]:
+                if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
+                        coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
+                    player_attack.skills[self.number_attack + 1](player_attacking)
+                    self.isattack = False
+                    player_attack.mana -= player_attack.manacosts[self.number_attack + 1]
+                    if player_attacking.hp <= 0:
+                        self.right_console.setText(f'player {self.list_of_players.index(player_attacking) + 1} died')
+                        self.button_to_attack.move(-100, -100)
+                        self.death.append(player_attacking)
+                        for i in range(4):
+                            try:
+                                self.players[i].remove(player_attacking)
+                            except:
+                                pass
+                        self.iswin()
+                    self.turn_f()
+                else:
+                    self.right_console.setText("Can't attack")
             else:
-                self.right_console.setText("Can't attack")
+                self.right_console.setText('Not enough mana.\nMaybe try simple attack?')
         else:
             if self.isattack:
                 self.isattack = False
@@ -389,6 +399,8 @@ class Window(QWidget):
         self.move_button.move(-100, -100)
         self.attack_button.move(-100, -100)
         self.index_now += 1
+        self.isattack = False
+        self.ismove = False
 
     def iswin(self):
         alive = 0

@@ -1,5 +1,6 @@
 class Unit(object):
-    def __init__(self, name, hp, atk, mana, range, move, first_skill_num, second_skill_num, third_skill_num,
+    def __init__(self, name, hp, atk, mana, manacost_first, manacost_second, manacost_third, range, move,
+                 first_skill_num, second_skill_num, third_skill_num,
                  description_of_atk, description_of_first, description_of_second, description_of_third, picture_atk,
                  picture_first, picture_second, picture_third):
         self.name = name
@@ -8,6 +9,9 @@ class Unit(object):
         self.atk = atk
         self.cur_atk = atk
         self.mana = mana
+        self.manacost_first = manacost_first
+        self.manacost_second = manacost_second
+        self.manacost_third = manacost_third
         self.range = range
         self.move = move
         self.first_skill_num = first_skill_num
@@ -38,6 +42,12 @@ class Unit(object):
             2: self.picture_first,
             3: self.picture_second,
             4: self.picture_third
+        }
+        self.manacosts = {
+            1: 0,
+            2: self.manacost_first,
+            3: self.manacost_second,
+            4: self.manacost_third
         }
 
     def take_damage(self, dmg):

@@ -5,7 +5,8 @@ from Unit import Unit
 
 class Warrior(Unit):  # armor dd
     def __init__(self):
-        super().__init__(name="Warrior", hp=200, atk=20, mana=50, range=1.5, move=92, first_skill_num=10,
+        super().__init__(name="Warrior", hp=200, atk=20, mana=50, manacost_first=0, manacost_second=10,
+                         manacost_third=50, range=1.5, move=92, first_skill_num=10,
                          second_skill_num=40, third_skill_num=990, description_of_atk=f'atk, deals 20 damage',
                          description_of_first='', description_of_second='', description_of_third='', picture_atk='',
                          picture_first='', picture_second='', picture_third='')
@@ -20,25 +21,14 @@ class Warrior(Unit):  # armor dd
         self.attack(target)
 
     def take_damage(self, dmg):
-        if dmg >= self.first_skill_num:
+        if dmg > self.first_skill_num:
             self.hp -= dmg - self.first_skill_num
 
     def second_skill(self, target):
-        if self.mana >= 10:
-            target.take_damage(self.second_skill_num + self.atk * 0.5)
-            self.mana -= 10
-        else:
-            print('No mana!')
-            target.take_damage(self.atk * 0.5)
+        target.take_damage(self.second_skill_num + self.atk * 0.5)
 
     def third_skill(self, target):
-        # def throw_sword():
-        if self.mana >= 10:
-            target.take_damage(self.third_skill_num + self.atk * 0.5)
-            self.atk -= 10
-        else:
-            print('No mana!')
-            target.take_damage(self.atk * 0.5)
+        target.take_damage(self.third_skill_num + self.atk * 0.5)
 
 
 class Mage(Unit):  # super dd
