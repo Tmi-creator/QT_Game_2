@@ -94,7 +94,11 @@ class Window(QWidget):
         self.coords_players = []
         self.clicked_at_class = [False for _ in range(8)]
         self.turn = 0
-
+        self.death = []
+        self.ismove = False
+        self.isattack = False
+        self.last_index = 0
+        self.last_turn = 0
         super().__init__()
         self.initUI()
 
@@ -144,9 +148,10 @@ class Window(QWidget):
         self.console.move(50, 900)
         self.right_console = QLabel(
             'Here will be info about classes                                                                    '
-            '                                                 ',
+            '                                                \n                                                        '
+            '   \n                                                ',
             self)
-        self.right_console.move(1000, 800)
+        self.right_console.move(900, 800)
         self.skill_console = QLabel('Here will be info about abilities', self)
         self.skill_console.move(-100, -600)
 
@@ -201,8 +206,7 @@ class Window(QWidget):
         self.attack_button.move(-1100, -500)
         self.move_button.clicked.connect(self.move_player)
         self.attack_button.clicked.connect(self.attack)
-        self.ismove = False
-        self.isattack = False
+
         self.attack_button.setStyleSheet(
             'QPushButton {background-color: qradialgradient(cx: 0.5, cy: 0.5, radius: 3, fx: 0.5, fy: 0.5,'
             ' stop: 0 rgba(255,2,0,255), stop: 0.2 rgba(195,2,0,125), stop: 0.4 rgba(155,2,0,0));'
@@ -212,12 +216,15 @@ class Window(QWidget):
             ' stop: 0 rgba(66,170,255,255), stop: 0.2 rgba(66,170,255,125), stop: 0.4 rgba(66,170,255,0));'
             ' color: white;}')
 
-        self.turn_on_all = QLabel(str(self.turn) + "           ", self)
+        self.turn_on_all = QLabel('turn: ' + str(self.turn) + "           ", self)
         self.turn_on_all.move(10, 10)
         self.coords_to_move = [0, 0]
         self.button_to_attack = QPushButton('', self)
         self.number_attack = 0
         self.button_to_attack.move(-100, -100)
+        self.right_console.setStyleSheet("QLabel{font-size: 16pt;}")
+        self.console.setStyleSheet("QLabel{font-size: 16pt;}")
+        self.skill_console.setStyleSheet("QLabel{font-size: 16pt;}")
 
     def mapButtons(self):
         if self.ismove:
@@ -233,8 +240,9 @@ class Window(QWidget):
         self.cur_player = self.sender()
         self.right_console.setText(
             f'player {self.buttons_of_players.index(self.sender()) + 1}, {player.name},'
-            f' hp: {player.hp}, atk: {player.atk}, mana: {player.mana}, range: {player.range}, move: {player.move}')
-        if self.turn % len(self.list_of_players) == self.buttons_of_players.index(self.sender()):
+            f' hp: {player.hp}, atk: {player.atk},\nmana: {player.mana}, range: {player.range},\nmove: {player.move}')
+        index = self.index_of_player()
+        if index == self.buttons_of_players.index(self.sender()):
             self.move_button.move(1000, 500)
             self.attack_button.move(1200, 500)
         else:
@@ -251,7 +259,6 @@ class Window(QWidget):
             if result:
                 self.players[self.cur_command].append(units[self.classes_to_choose.index(self.sender()) + 1]())
                 self.list_of_players.append(self.players[self.cur_command][-1])
-                print(self.list_of_players)
                 self.clicked_at_class[self.classes_to_choose.index(self.sender())] = False
                 self.sender().setStyleSheet('QPushButton {background-color: #None;}')
         else:
@@ -271,7 +278,6 @@ class Window(QWidget):
     def placeUnits(self):
         try:
             self.coords_players.append(self.placement_players[self.cur_command][0])
-            print(self.coords_players)
             del [self.placement_players[self.cur_command][0]]
             return 1
         except:
@@ -295,7 +301,7 @@ class Window(QWidget):
                 if self.coords_players[i] in self.placement_players_check[j]:
                     k = j
             self.buttons_of_players[i].setStyleSheet(colours_of_teams[k + 1])
-        self.skill_console.move(1000, 600)
+        self.skill_console.move(900, 600)
         self.clean()
 
     def clean(self):
@@ -335,8 +341,6 @@ class Window(QWidget):
             move_player = self.list_of_players[self.buttons_of_players.index(self.cur_player)].move
             if1 = self.map_landscape[
                       self.coords_to_move[1] * int(len(self.mapa) ** 0.5) + self.coords_to_move[0]] not in [5, 6]
-            print(self.map_landscape[
-                      self.coords_to_move[1] * int(len(self.mapa) ** 0.5) + self.coords_to_move[0]])
             if abs(coords_now[0] - self.coords_to_move[0]) + abs(
                     coords_now[1] - self.coords_to_move[1]) <= move_player and if1:
                 self.coords_players[self.buttons_of_players.index(self.cur_player)] = self.coords_to_move
@@ -364,7 +368,9 @@ class Window(QWidget):
                 if player_attacking.hp <= 0:
                     self.right_console.setText(f'player {self.list_of_players.index(player_attacking) + 1} died')
                     self.button_to_attack.move(-100, -100)
-                    self.list_of_players.remove(player_attacking)
+                    self.death.append(player_attacking)
+                    self.last_index = self.list_of_players.index(player_attack)
+                    self.last_turn = self.turn
                     for i in range(4):
                         try:
                             self.players[i].remove(player_attacking)
@@ -374,8 +380,6 @@ class Window(QWidget):
                 self.turn_f()
             else:
                 self.right_console.setText("Can't attack")
-                print(coords_attacker, coords_attacking, (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
-                    coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range)
         else:
             if self.isattack:
                 self.isattack = False
@@ -384,7 +388,7 @@ class Window(QWidget):
 
     def turn_f(self):
         self.turn += 1
-        self.turn_on_all.setText(str(self.turn))
+        self.turn_on_all.setText("turn: " + str(self.turn))
         self.move_button.move(-100, -100)
         self.attack_button.move(-100, -100)
 
@@ -401,9 +405,23 @@ class Window(QWidget):
             for i in self.buttons_of_players:
                 i.move(-100, -100)
             self.turn_on_all.move(-100, -100)
-            self.right_console.move(-100, -100)
+            self.right_console.move(500, 500)
+            self.right_console.setText("Good game. That's all")
             self.console.move(-100, -100)
             self.skill_console.move(-100, -100)
+
+    def index_of_player(self):
+        if self.last_turn == self.last_index == 0:
+            return self.turn % len(self.list_of_players)
+        index = (self.turn - self.last_turn + self.last_index-len(self.death)) % (len(self.list_of_players) - len(self.death))
+        print(index)
+        for i in range(index+1):
+            if self.list_of_players[i] in self.death:
+                index += 1
+        print(index)
+        print()
+        return index
+
 
 
 def except_hook(cls, exception, traceback):
