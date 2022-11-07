@@ -97,8 +97,7 @@ class Window(QWidget):
         self.death = []
         self.ismove = False
         self.isattack = False
-        self.last_index = 0
-        self.last_turn = 0
+        self.index_now = 0
         super().__init__()
         self.initUI()
 
@@ -369,8 +368,6 @@ class Window(QWidget):
                     self.right_console.setText(f'player {self.list_of_players.index(player_attacking) + 1} died')
                     self.button_to_attack.move(-100, -100)
                     self.death.append(player_attacking)
-                    self.last_index = self.list_of_players.index(player_attack)
-                    self.last_turn = self.turn
                     for i in range(4):
                         try:
                             self.players[i].remove(player_attacking)
@@ -391,6 +388,7 @@ class Window(QWidget):
         self.turn_on_all.setText("turn: " + str(self.turn))
         self.move_button.move(-100, -100)
         self.attack_button.move(-100, -100)
+        self.index_now += 1
 
     def iswin(self):
         alive = 0
@@ -411,17 +409,15 @@ class Window(QWidget):
             self.skill_console.move(-100, -100)
 
     def index_of_player(self):
-        if self.last_turn == self.last_index == 0:
-            return self.turn % len(self.list_of_players)
-        index = (self.turn - self.last_turn + self.last_index-len(self.death)) % (len(self.list_of_players) - len(self.death))
-        print(index)
-        for i in range(index+1):
-            if self.list_of_players[i] in self.death:
-                index += 1
-        print(index)
-        print()
-        return index
+        self.index_now %= len(self.list_of_players)
+        while True:
+            if self.list_of_players[self.index_now] in self.death:
+                self.index_now += 1
+            else:
+                break
+            self.index_now %= len(self.list_of_players)
 
+        return self.index_now
 
 
 def except_hook(cls, exception, traceback):
