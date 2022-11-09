@@ -125,10 +125,10 @@ class Window(QWidget):
             # self.background.resize(1000, 1000)
             self.background.move(0, 0)
             self.mapa = [QPushButton("", self) for _ in range(100)]
-            self.start_buttons = [QPushButton('From database', self) for i in range(4)]
+            self.start_buttons = [QPushButton('From database', self) for i in range(5)]
             self.start_console = QLabel('                                                    ', self)
             self.start_console.move(800, 600)
-            for i in range(4):
+            for i in range(5):
                 self.start_buttons[i].move(110 + i * 100, 10)
                 self.start_buttons[i].clicked.connect(self.draw_map)
                 color1, color2, color3 = randint(0, 255), randint(0, 255), randint(0, 255)
@@ -140,7 +140,8 @@ class Window(QWidget):
                     ' color: white;}')
             self.start_buttons[0].setText('Random')
             self.start_buttons[1].setText('From file')
-            self.start_buttons[3].setText('Stop')
+            self.start_buttons[3].setText('Add to a database')
+            self.start_buttons[4].setText('Stop')
             self.console = QLabel('Here will be info about tiles', self)
             self.console.move(50, 900)
             self.right_console = QLabel(
@@ -303,7 +304,7 @@ class Window(QWidget):
                 return 0
         if self.sender().text() == 'Stop':
             if self.ismap:
-                for i in range(4):
+                for i in range(5):
                     self.start_buttons[i].move(-100, -100)
                 self.skip_start = True
             else:
