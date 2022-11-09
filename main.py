@@ -1,37 +1,40 @@
-from PyQt5.QtWidgets import QWidget, QApplication, QPushButton
+import sys
+
+from PyQt5.QtWidgets import QWidget, QApplication, QPushButton, QLabel
 
 
-class Window(QWidget):
-
+class Example(QWidget):
     def __init__(self):
-        self.istext = False
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(500, 500, 500, 500)
-        QWidget.__init__(self)
-        mapa = [QPushButton(str(i), self) for i in range(100)]
-        x = int(len(mapa) ** 0.5)
-        for i in range(x):
-            for j in range(x):
-                mapa[i * x + j].resize(80, 80)
-                mapa[i * x + j].move(j*80 + 50, i*80 + 50)
-                mapa[i * x + j].clicked.connect(self.handleButton)
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Кто отправил сигнал')
 
-    def handleButton(self):
-        print(self.sender())
+        self.button_1 = QPushButton(self)
+        self.button_1.move(90, 40)
+        self.button_1.setText("Кнопка 1")
+        self.button_1.clicked.connect(self.run)
 
+        self.button_2 = QPushButton(self)
+        self.button_2.move(90, 80)
+        self.button_2.setText("Кнопка 2")
+        self.button_2.clicked.connect(self.run)
 
-def except_hook(cls, exception, traceback):
-    sys.__excepthook__(cls, exception, traceback)
+        self.label = QLabel(self)
+        self.label.setText("Пока никто не отправлял")
+        self.label.move(50, 120)
+
+        self.show()
+
+    def run(self):
+        self.label.setText(self.sender().text())
+        print(self.sender().text())
 
 
 if __name__ == '__main__':
-    import sys
-
-    sys.excepthook = except_hook
     app = QApplication(sys.argv)
-    window = Window()
-    window.show()
-    sys.exit(app.exec_())
+    ex = Example()
+    ex.show()
+    sys.exit(app.exec())

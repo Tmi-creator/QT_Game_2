@@ -5,9 +5,9 @@ from Unit import Unit
 
 class Warrior(Unit):  # armor dd
     def __init__(self):
-        super().__init__(name="Warrior", hp=200, atk=20, mana=50, manacost_first=0, manacost_second=10,
-                         manacost_third=50, range=1.5, move=92, first_skill_num=10,
-                         second_skill_num=40, third_skill_num=990, description_of_atk=f'atk, deals 20 damage',
+        super().__init__(name="Warrior", hp=300, atk=30, mana=60, manacost_first=0, manacost_second=20,
+                         manacost_third=60, range=1.5, move=92, first_skill_num=15,
+                         second_skill_num=20, third_skill_num=990, description_of_atk=f'atk, deals 20 damage',
                          description_of_first='', description_of_second='', description_of_third='', picture_atk='',
                          picture_first='', picture_second='', picture_third='')
         # self.hp = 200
@@ -25,7 +25,7 @@ class Warrior(Unit):  # armor dd
             self.hp -= dmg - self.first_skill_num
 
     def second_skill(self, target):
-        target.take_damage(self.second_skill_num + self.atk * 0.5)
+        self.atk += self.second_skill_num
 
     def third_skill(self, target):
         target.take_damage(self.third_skill_num + self.atk * 0.5)
