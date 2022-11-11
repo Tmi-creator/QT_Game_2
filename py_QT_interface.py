@@ -146,11 +146,14 @@ class Window(QWidget):
             self.console.move(50, 900)
             self.right_console = QLabel(
                 'Here will be info about classes                                                                       '
-                '                                                \n                                                        '
+                '                                                \n                                                    '
                 '   \n                                                ',
                 self)
             self.right_console.move(900, 800)
-            self.skill_console = QLabel('Here will be info about abilities', self)
+            self.skill_console = QLabel('Here will be info about abilities                            \n            '
+                                        '                                    \n                                        '
+                                        '               ',
+                                        self)
             self.skill_console.move(-100, -600)
 
             self.classes_to_choose = [QPushButton("", self) for i in range(8)]
@@ -453,7 +456,8 @@ class Window(QWidget):
             if player_attack.mana >= player_attack.manacosts[self.number_attack + 1]:
                 if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
                         coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
-                    player_attack.skills[self.number_attack + 1](player_attacking)
+                    if player_attacking.immortal != 0:
+                        player_attack.skills[self.number_attack + 1](player_attacking)
                     self.isattack = False
                     player_attack.mana -= player_attack.manacosts[self.number_attack + 1]
                     if player_attacking.hp <= 0:
@@ -485,6 +489,9 @@ class Window(QWidget):
         self.index_now += 1
         self.isattack = False
         self.ismove = False
+        for i in self.list_of_players:
+            if i.immortal:
+                i.immortal -= 1
 
     def iswin(self):
         alive = 0
