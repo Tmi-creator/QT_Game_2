@@ -2,7 +2,7 @@ class Unit(object):
     def __init__(self, name, hp, atk, mana, manacost_first, manacost_second, manacost_third, range, move,
                  first_skill_num, second_skill_num, third_skill_num,
                  description_of_atk, description_of_first, description_of_second, description_of_third, picture_atk,
-                 picture_first, picture_second, picture_third):
+                 picture_first, picture_second, picture_third, immortal):
         self.name = name
         self.hp = hp
         self.max_hp = hp
@@ -25,6 +25,7 @@ class Unit(object):
         self.picture_first = picture_first
         self.picture_second = picture_second
         self.picture_third = picture_third
+        self.immortal = immortal
         self.skills = {
             1: self.attack,
             2: self.first_skill,
