@@ -40,6 +40,13 @@ class Rogue(Unit):
     def third_skill(self, target):
         target.cur_atk -= randint(1, self.third_skill_num)
 
+    def make_it_good(self):
+        self.descriptions[1] = f'atk, deals {self.atk} damage'
+        self.descriptions[
+            2] = f'dodge atk with {self.first_skill_num}% chance,cost {self.manacost_first};\nThis is simple atk'
+        self.descriptions[3] = f'double atk with {self.second_skill_num}% chance, costs {self.manacost_second} mana'
+        self.descriptions[4] = f'target.atk-=1d{self.third_skill_num}, costs {self.manacost_third} mana'
+
 
 class Paladin(Unit):  # armor healer
     def __init__(self):
@@ -64,3 +71,10 @@ class Paladin(Unit):  # armor healer
     def third_skill(self, target):
         target.first_skill_num += self.third_skill_num
         target.second_skill_num += self.third_skill_num
+
+    def make_it_good(self):
+        self.descriptions[1] = f'atk, deals {self.atk} damage'
+        self.descriptions[2] = f'armor {self.first_skill_num}, this is simple atk'
+        self.descriptions[3] = f'heal +{self.second_skill_num}hp to target, costs {self.manacost_second} mana'
+        self.descriptions[
+            4] = f'target.first and second skill+={self.third_skill_num}, costs {self.manacost_third} mana'

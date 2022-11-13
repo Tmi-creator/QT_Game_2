@@ -9,9 +9,9 @@ class Warrior(Unit):  # armor dd
                          manacost_third=60, range=1.5, move=92, first_skill_num=15,
                          second_skill_num=20, third_skill_num=990, description_of_atk='atk, deals 30 damage',
                          description_of_first='armor 15, this is simple atk', description_of_second='self.atk += 20',
-                         description_of_third='', picture_atk='img/Warrior.png',
-                         picture_first='img/armor.png', picture_second='img/Warrior.png',
-                         picture_third='img/Warrior.png', immortal=0)
+                         description_of_third='atk', picture_atk='img/Warrior.png',
+                         picture_first='img/armor.png', picture_second='img/clean_sword.png',
+                         picture_third='img/ultra_attack.png', immortal=0)
 
     def first_skill(self, target):
         self.attack(target)
@@ -24,7 +24,7 @@ class Warrior(Unit):  # armor dd
         self.atk += self.second_skill_num
 
     def third_skill(self, target):
-        target.take_damage(self.third_skill_num + self.atk * 0.5)
+        target.take_damage(self.third_skill_num)
 
     def make_it_good(self):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
