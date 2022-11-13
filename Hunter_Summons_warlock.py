@@ -5,55 +5,22 @@ from Unit import Unit
 #     pass
 
 
-# class Hunter_summons(Unit):
-#     pass
-
-
-class Warlock(Unit):  # мазохист dd (Много, очень очень много) (can heal himself)
+class Warlock(Unit):
     def __init__(self):
-        super().__init__(hp=150, atk=20, mana=200, first_skill_num=1.1, second_skill_num=20, third_skill_num=30,
-                         description_of_atk=f'atk, deals {self.atk} damage',
+        super().__init__(hp=100, atk=20, mana=60, first_skill_num=30, second_skill_num=20, third_skill_num=40,
+                         description_of_atk=f'atk, deals 20 damage',
                          description_of_first='', description_of_second='', description_of_third='', picture_atk='',
                          picture_first='', picture_second='', picture_third='')
 
-    # self.hp = 150
-    # self.atk = 20
-    # self.mana = 200
-    # elf.first_skill_num = 1.1
-    # self.second_skill_num = 20
-    # self.third_skill_num = 30
-
     def first_skill(self, target):
-        # def suicide_mission():
-        if self.hp > 1 and self.mana >= 10:
-            ch = int(input("Введите кол-во атаки на хп"))
-            if ch > self.hp:
-                target.hp -= self.hp * self.first_skill_num
-                self.hp -= self.hp - 1
-            else:
-                target.hp -= ch * self.first_skill_num
-                self.hp -= ch
-        else:
-            print("No mana!")
-            target.attack(0.5 * self.cur_atk)
+        self.mana += self.first_skill_num
 
 
-def second_skill(self, target):
-    # def masochism():
-    if self.hp > 20 and self.mana >= 10:
-        target.take_damage(20 + self.second_skill_num)
-        self.hp -= 20
-    else:
-        print("no hp/mana")
-        target.attack(0.5 * self.cur_atk)
+    def second_skill(self, target):
+        self.atk += self.second_skill_num
+        self.hp -= self.second_skill_num * 2
 
 
-def third_skill(self, target):
-    # def take_hp():
-    if self.mana >= 20:
+    def third_skill(self, target):
         target.hp -= self.third_skill_num
-        self.hp += self.third_skill_num - 10
-        self.mana -= 20
-    else:
-        print("No mana!")
-        target.attack(0.5 * self.cur_atk)
+        self.hp += self.third_skill_num

@@ -13,13 +13,6 @@ class Druid(Unit):  # transformer dd healer
                          description_of_first='', description_of_second='', description_of_third='', picture_atk='',
                          picture_first='', picture_second='', picture_third='')
 
-    # self.hp = 75
-    # self.atk = 10
-    # self.mana = 50
-    # self.first_skill_num = 0
-    # self.second_skill_num = 0
-    # self.third_skill_num = 0
-
     def first_skill(self, target):
         # def transform():
         cooldown = 0
@@ -59,13 +52,6 @@ class Priest(Unit):  # super healer (can revive)
                          description_of_atk=f'atk, deals {self.atk} damage',
                          description_of_first='', description_of_second='', description_of_third='', picture_atk='',
                          picture_first='', picture_second='', picture_third='')
-
-    # self.hp = 150
-    # self.atk = 20
-    # self.mana = 50
-    # self.first_skill_num = 80
-    # self.second_skill_num = 5
-    # self.third_skill_num = 5
 
     def first_skill(self, target):
         # def heal():

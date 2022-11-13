@@ -3,6 +3,7 @@ from random import *
 
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtSql import *
 from PyQt5.QtWidgets import *
 
 from Hunter_Summons_warlock import Warlock
@@ -12,6 +13,7 @@ from Warrior_Mage import Warrior, Mage
 
 TEAMS = 4
 EPS = 1e-6
+map_from_db = ''
 
 units = {
     1: Warrior,
@@ -275,7 +277,6 @@ class Window(QWidget):
                     self.mapa[i * x + j + 8].setIconSize(QtCore.QSize(80, 80))
             self.ismap = True
 
-
         elif self.sender().text() == 'From file':
             fname = QFileDialog.getOpenFileName(
                 self, 'Выбрать файл', '',
@@ -312,6 +313,34 @@ class Window(QWidget):
                 self.skip_start = True
             else:
                 self.right_console.setText('Make a map')
+        if self.sender().text() == 'From database':
+            global map_from_db
+            map_from_db = ''
+            self.import_from()
+            while map_from_db == '':
+                pass
+            try:
+                parts_of_map = map_from_db.split(';')
+                x = int(len(self.mapa) ** 0.5)
+                if len(parts_of_map) == x:
+                    for i in range(x):
+                        for j in range(x):
+                            self.mapa[i * x + j].resize(80, 80)
+                            self.mapa[i * x + j].move(j * 80 + 50, i * 80 + 50)
+                            self.mapa[i * x + j].clicked.connect(self.mapButtons)
+                            self.map_landscape[i * x + j] = int(parts_of_map[i][j])
+                            self.mapa[i * x + j].setIcon(QtGui.QIcon(landscape_img[int(parts_of_map[i][j])]))
+                            self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                            self.map_points[self.mapa[i * x + j]] = landscape[int(parts_of_map[i][j])] + " " + str(
+                                j) + ";" + str(i)
+                    self.ismap = True
+                else:
+                    self.right_console.setText('Failed! Incorrect text')
+                    self.ismap = False
+            except:
+                self.right_console.setText('Failed! Incorrect text')
+                self.ismap = False
+
 
     def mapButtons(self):
         if self.ismove:
@@ -325,9 +354,12 @@ class Window(QWidget):
     def rightConsole(self):
         player = self.list_of_players[self.buttons_of_players.index(self.sender())]
         self.cur_player = self.sender()
+        for i in range(4):
+            self.skills[i].setIcon(QtGui.QIcon(player.pictures[i + 1]))
         self.right_console.setText(
             f'player {self.buttons_of_players.index(self.sender()) + 1}, {player.name},'
-            f' hp: {player.hp}, atk: {player.atk},\nmana: {player.mana}, range: {player.range},\nmove: {player.move}')
+            f' hp: {player.hp}, atk: {player.atk},\nmana: {player.mana}, range: {player.range},\nmove: {player.move},'
+            f'immortal: {player.immortal}')
         index = self.index_of_player()
         if index == self.buttons_of_players.index(self.sender()):
             self.move_button.move(1000, 500)
@@ -456,7 +488,7 @@ class Window(QWidget):
             if player_attack.mana >= player_attack.manacosts[self.number_attack + 1]:
                 if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
                         coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
-                    if player_attacking.immortal != 0:
+                    if player_attacking.immortal == 0:
                         player_attack.skills[self.number_attack + 1](player_attacking)
                     self.isattack = False
                     player_attack.mana -= player_attack.manacosts[self.number_attack + 1]
@@ -472,7 +504,24 @@ class Window(QWidget):
                         self.iswin()
                     self.turn_f()
                 else:
-                    self.right_console.setText("Can't attack")
+                    try:
+                        player_attack.skills[self.number_attack + 1](0)
+                        self.isattack = False
+                        player_attack.mana -= player_attack.manacosts[self.number_attack + 1]
+                        if player_attack.hp < 0:
+                            self.right_console.setText(
+                                f'player {self.list_of_players.index(player_attack) + 1} died')
+                            self.buttons_of_players[self.index_now].move(-100, -100)
+                            self.death.append(player_attack)
+                            for i in range(4):
+                                try:
+                                    self.players[i].remove(player_attack)
+                                except:
+                                    pass
+                            self.iswin()
+                        self.turn_f()
+                    except:
+                        self.right_console.setText("Can't attack")
             else:
                 self.right_console.setText('Not enough mana.\nMaybe try simple attack?')
         else:
@@ -492,6 +541,7 @@ class Window(QWidget):
         for i in self.list_of_players:
             if i.immortal:
                 i.immortal -= 1
+            i.make_it_good()
 
     def iswin(self):
         alive = 0
@@ -521,6 +571,57 @@ class Window(QWidget):
             self.index_now %= len(self.list_of_players)
 
         return self.index_now
+
+    def import_from(self):
+        self.new_form = SecondForm()
+        self.new_form.show()
+
+
+class SecondForm(QWidget):
+    def __init__(self):
+        self.mapa = ''
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # Зададим тип базы данных
+        db = QSqlDatabase.addDatabase('QSQLITE')
+        # Укажем имя базы данных
+        db.setDatabaseName('database for game.db')
+        # И откроем подключение
+        db.open()
+
+        # QTableView - виджет для отображения данных из базы
+        view = QTableView(self)
+        # Создадим объект QSqlTableModel,
+        # зададим таблицу, с которой он будет работать,
+        #  и выберем все данные
+        model = QSqlTableModel(self, db)
+        model.setTable('maps')
+        model.select()
+
+        # Для отображения данных на виджете
+        # свяжем его и нашу модель данных
+        view.setModel(model)
+        view.move(10, 10)
+        view.resize(617, 315)
+
+        self.setGeometry(300, 100, 650, 450)
+        self.setWindowTitle('Пример работы с QtSql')
+        self.text_edit = QTextBrowser(self)
+        self.text_edit.setReadOnly(False)
+        self.text_edit.setText('Here you should write a map')
+        self.text_edit.move(50, 350)
+        self.text_edit.resize(500, 40)
+        self.okay = QPushButton('Stop', self)
+        self.okay.clicked.connect(self.stop)
+        self.okay.move(200, 400)
+
+    def stop(self):
+        global map_from_db
+        self.mapa = self.text_edit.toPlainText()
+        map_from_db = self.mapa
+        self.close()
 
 
 def except_hook(cls, exception, traceback):

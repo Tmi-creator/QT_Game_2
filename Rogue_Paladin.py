@@ -1,16 +1,19 @@
 from random import randint
+
 from Unit import Unit
 
 
 class Rogue(Unit):
     def __init__(self):
-        super().__init__(hp=100, atk=60, mana=50, first_skill_num=50, second_skill_num=60, third_skill_num=20,
+        super().__init__(name='Rogue', hp=100, atk=60, mana=50, first_skill_num=50, range=1.5, move=3,
+                         second_skill_num=60, third_skill_num=20,
                          manacost_first=0, manacost_second=15, manacost_third=15,
                          description_of_atk='atk, deals 60 damage',
                          description_of_first='dodge atk with 50% chance, -5mana;\nThis is simple atk',
                          description_of_second='double atk with 60% chance', description_of_third='target.atk-=1d20',
                          picture_atk='img/Rogue.png',
-                         picture_first='img/Rogue.png', picture_second='img/Rogue.png', picture_third='img/Rogue.png')
+                         picture_first='img/Blink.png', picture_second='img/double_atk.png',
+                         picture_third='img/decrease_damage.png', immortal=0)
 
     def first_skill(self, target):
         self.attack(target)
@@ -40,13 +43,14 @@ class Rogue(Unit):
 
 class Paladin(Unit):  # armor healer
     def __init__(self):
-        super().__init__(hp=400, atk=15, mana=75, first_skill_num=10, second_skill_num=40, third_skill_num=10,
+        super().__init__(name='Paladin', range=1.5, move=2, hp=400, atk=15, mana=75, first_skill_num=10,
+                         second_skill_num=40, third_skill_num=10,
                          manacost_first=0, manacost_second=15, manacost_third=30,
                          description_of_atk='atk, deals 15 damage', description_of_first='armor 10, this is simple atk',
                          description_of_second='heal to 40hp',
                          description_of_third='first and second skills += 10', picture_atk='img/Paladin.png',
-                         picture_first='img/Paladin.png', picture_second='img/Paladin.png',
-                         picture_third='img/Paladin.png')
+                         picture_first='img/armor.png', picture_second='img/Paladin.png',
+                         picture_third='img/Paladin.png', immortal=0)
 
     def first_skill(self, dmg):
         if dmg > self.first_skill_num:
@@ -54,7 +58,7 @@ class Paladin(Unit):  # armor healer
 
     def second_skill(self, target):
         target.hp += self.second_skill_num
-        if (target.hp > target.max_hp):
+        if target.hp > target.max_hp:
             target.hp = target.max_hp
 
     def third_skill(self, target):
