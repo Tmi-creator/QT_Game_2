@@ -39,8 +39,8 @@ class Mage(Unit):  # super dd
                          manacost_third=10, first_skill_num=200, second_skill_num=5, third_skill_num=20,
                          description_of_atk='atk, deals 40 damage', description_of_first='1d4 to deal 200 damage',
                          description_of_second='give 4 turns immortal', description_of_third='+20 mana to target',
-                         picture_atk='img/Mage.png', picture_first='img/Mage.png',
-                         picture_second='img/Mage.png', picture_third='img/Mage.png', immortal=0)
+                         picture_atk='img/Mage.png', picture_first='img/magic_rain.png',
+                         picture_second='img/immortal.png', picture_third='img/mana_up.png', immortal=0)
 
     def first_skill(self, target):
         target.take_damage(self.first_skill_num * randint(0, 1) * randint(0, 1))

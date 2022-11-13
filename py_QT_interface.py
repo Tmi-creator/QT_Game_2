@@ -6,9 +6,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtSql import *
 from PyQt5.QtWidgets import *
 
-from Hunter_Summons_warlock import Warlock
+from Hunter_Summons_warlock import Warlock, Hunter
 from Rogue_Paladin import Rogue, Paladin
-from Shaman_Druid_Priest import Druid, Priest
 from Warrior_Mage import Warrior, Mage
 
 TEAMS = 4
@@ -20,11 +19,11 @@ units = {
     2: Mage,
     3: Rogue,
     4: Paladin,
-    # 5: Hunter,
+    5: Hunter,
     6: Warlock,
     # 7: Shaman,
-    8: Druid,
-    9: Priest
+    # 8: Druid,
+    # 9: Priest
 
 }
 
@@ -104,7 +103,7 @@ class Window(QWidget):
         self.cnt_teams = 0
         self.pref_of_players = [0, 0, 0, 0]
         self.coords_players = []
-        self.clicked_at_class = [False for _ in range(8)]
+        self.clicked_at_class = [False for _ in range(6)]
         self.turn = 0
         self.death = []
         self.ismove = False
@@ -127,6 +126,8 @@ class Window(QWidget):
             # self.background.resize(1000, 1000)
             self.background.move(0, 0)
             self.mapa = [QPushButton("", self) for _ in range(100)]
+            for i in self.mapa:
+                i.move(-100, -100)
             self.start_buttons = [QPushButton('From database', self) for i in range(5)]
             self.start_console = QLabel('                                                    ', self)
             self.start_console.move(800, 600)
@@ -152,14 +153,16 @@ class Window(QWidget):
                 '   \n                                                ',
                 self)
             self.right_console.move(900, 800)
-            self.skill_console = QLabel('Here will be info about abilities                            \n            '
-                                        '                                    \n                                        '
-                                        '               ',
-                                        self)
+            self.skill_console = QLabel(
+                'Here will be info about abilities                                                        '
+                '\n            '
+                '                                    \n                                        '
+                '               ',
+                self)
             self.skill_console.move(-100, -600)
 
-            self.classes_to_choose = [QPushButton("", self) for i in range(8)]
-            for i in range(4):
+            self.classes_to_choose = [QPushButton("", self) for i in range(6)]
+            for i in range(3):
                 for j in range(2):
                     self.classes_to_choose[i * 2 + j].resize(60, 60)
                     self.classes_to_choose[i * 2 + j].move(j * 60 + 1000, i * 60 + 50)
@@ -341,7 +344,6 @@ class Window(QWidget):
                 self.right_console.setText('Failed! Incorrect text')
                 self.ismap = False
 
-
     def mapButtons(self):
         if self.ismove:
             self.coords_to_move = list(map(int, self.map_points[self.sender()][-4:].split(';')))
@@ -381,7 +383,7 @@ class Window(QWidget):
                 self.clicked_at_class[self.classes_to_choose.index(self.sender())] = False
                 self.sender().setStyleSheet('QPushButton {background-color: None;}')
         else:
-            for i in range(8):
+            for i in range(6):
                 self.clicked_at_class[i] = False
                 self.classes_to_choose[i].setStyleSheet('QPushButton {background-color: None;}')
             self.clicked_at_class[self.classes_to_choose.index(self.sender())] = True
@@ -431,13 +433,16 @@ class Window(QWidget):
     def clean(self):
         for i in range(TEAMS):
             self.commands[i].move(-100, -100)
-        for i in range(8):
+        for i in range(6):
             self.classes_to_choose[i].move(-100, -100)
         self.stop_button.move(-100, -100)
         self.right_console.setText('Here will be info about players')
         for i in range(2):
             for j in range(2):
                 self.skills[i * 2 + j].move(1000 + i * 80, j * 80 + 300)
+        self.turn -= 1
+        self.index_now -= 1
+        self.turn_f()
 
     def descriprionOfSkills(self):
         for i in range(4):

@@ -44,7 +44,8 @@ class Rogue(Unit):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
         self.descriptions[
             2] = f'dodge atk with {self.first_skill_num}% chance,cost {self.manacost_first};\nThis is simple atk'
-        self.descriptions[3] = f'double atk with {self.second_skill_num}% chance, costs {self.manacost_second} mana'
+        self.descriptions[
+            3] = f'double atk with {self.second_skill_num}% chance,\ncosts {self.manacost_second + 5} mana'
         self.descriptions[4] = f'target.atk-=1d{self.third_skill_num}, costs {self.manacost_third} mana'
 
 
@@ -56,8 +57,8 @@ class Paladin(Unit):  # armor healer
                          description_of_atk='atk, deals 15 damage', description_of_first='armor 10, this is simple atk',
                          description_of_second='heal to 40hp',
                          description_of_third='first and second skills += 10', picture_atk='img/Paladin.png',
-                         picture_first='img/armor.png', picture_second='img/Paladin.png',
-                         picture_third='img/Paladin.png', immortal=0)
+                         picture_first='img/armor.png', picture_second='img/paladin_heal.png',
+                         picture_third='img/god_light.png', immortal=0)
 
     def first_skill(self, dmg):
         if dmg > self.first_skill_num:
@@ -75,6 +76,6 @@ class Paladin(Unit):  # armor healer
     def make_it_good(self):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
         self.descriptions[2] = f'armor {self.first_skill_num}, this is simple atk'
-        self.descriptions[3] = f'heal +{self.second_skill_num}hp to target, costs {self.manacost_second} mana'
+        self.descriptions[3] = f'heal +{self.second_skill_num}hp to target,\ncosts {self.manacost_second} mana'
         self.descriptions[
-            4] = f'target.first and second skill+={self.third_skill_num}, costs {self.manacost_third} mana'
+            4] = f'target.first and second skill+={self.third_skill_num},\ncosts {self.manacost_third} mana'
