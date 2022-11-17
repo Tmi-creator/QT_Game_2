@@ -54,14 +54,14 @@ class Unit(object):
     def take_damage(self, dmg):
         self.hp -= dmg
 
-    def attack(self, target):
-        target.take_damage(self.atk)
+    def attack(self, target, mod=0):
+        target.take_damage(self.atk * (1 + mod / 100))
 
-    def first_skill(self, target):
+    def first_skill(self, target, mod=0):
         raise Exception("Override me")
 
-    def second_skill(self, target):
+    def second_skill(self, target, mod=0):
         raise Exception("Override me")
 
-    def third_skill(self, target):
+    def third_skill(self, target, mod=0):
         raise Exception("Override me")

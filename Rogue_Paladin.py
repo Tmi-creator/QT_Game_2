@@ -15,8 +15,8 @@ class Rogue(Unit):
                          picture_first='img/Blink.png', picture_second='img/double_atk.png',
                          picture_third='img/decrease_damage.png', immortal=0)
 
-    def first_skill(self, target):
-        self.attack(target)
+    def first_skill(self, target, mod=0):
+        self.attack(target, mod=mod)
 
     def take_damage(self, dmg):
         if self.mana > 5:
@@ -30,22 +30,20 @@ class Rogue(Unit):
         if randint(1, 100) > self.first_skill_num // 5:
             self.hp -= dmg
 
-    def second_skill(self, target):
+    def second_skill(self, target, mod=0):
+        self.attack(target, mod=mod)
         if randint(1, 100) > self.second_skill_num:
-            self.attack(target)
-            self.attack(target)
-        else:
-            self.attack(target)
+            self.attack(target, mod=mod)
 
-    def third_skill(self, target):
+    def third_skill(self, target, mod=0):
         target.cur_atk -= randint(1, self.third_skill_num)
 
     def make_it_good(self):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
         self.descriptions[
-            2] = f'dodge atk with {self.first_skill_num}% chance,cost {self.manacost_first};\nThis is simple atk'
+            2] = f'dodge atk with {self.first_skill_num}% chance,cost {self.manacost_first + 5};\nThis is simple atk'
         self.descriptions[
-            3] = f'double atk with {self.second_skill_num}% chance,\ncosts {self.manacost_second + 5} mana'
+            3] = f'double atk with {self.second_skill_num}% chance,\ncosts {self.manacost_second} mana'
         self.descriptions[4] = f'target.atk-=1d{self.third_skill_num}, costs {self.manacost_third} mana'
 
 
@@ -60,16 +58,19 @@ class Paladin(Unit):  # armor healer
                          picture_first='img/armor.png', picture_second='img/paladin_heal.png',
                          picture_third='img/god_light.png', immortal=0)
 
-    def first_skill(self, dmg):
+    def take_damage(self, dmg):
         if dmg > self.first_skill_num:
             self.hp -= dmg - self.first_skill_num
 
-    def second_skill(self, target):
+    def first_skill(self, target, mod=0):
+        self.attack(target, mod=mod)
+
+    def second_skill(self, target, mod=0):
         target.hp += self.second_skill_num
         if target.hp > target.max_hp:
             target.hp = target.max_hp
 
-    def third_skill(self, target):
+    def third_skill(self, target, mod=0):
         target.first_skill_num += self.third_skill_num
         target.second_skill_num += self.third_skill_num
 

@@ -32,7 +32,7 @@ class Hunter(Unit):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
         self.descriptions[2] = f"passive, when kill unit mana+={self.first_skill_num},\nit's simple atk"
         self.descriptions[3] = f'self.atk+={self.second_skill_num}, costs {self.second_skill_num * 2} hp'
-        self.descriptions[4] = f'atk, deals {self.third_skill_num}, self.hp+={self.third_skill_num}'
+        self.descriptions[4] = f'atk, deals {self.third_skill_num} damage, self.hp+={self.third_skill_num}'
 
 
 class Warlock(Unit):
@@ -44,26 +44,27 @@ class Warlock(Unit):
                          picture_atk='img/Warlock.png', picture_first='img/death_mana.png',
                          picture_second='img/hp_into_atk.png', picture_third='img/take_hp.png', immortal=0)
 
-    def attack(self, target):
-        target.take_damage(self.atk)
+    def attack(self, target, mod=0):
+        target.take_damage(self.atk * (1 + mod / 100))
         if target.hp <= 0:
             self.first_skill(target)
 
-    def first_skill(self, target):
+    def first_skill(self, target, mod=0):
         self.mana += self.first_skill_num
 
-    def second_skill(self, target):
+    def second_skill(self, target, mod=0):
         self.atk += self.second_skill_num
         self.hp -= self.second_skill_num * 2
 
-    def third_skill(self, target):
-        target.hp -= self.third_skill_num
+    def third_skill(self, target, mod=0):
+        target.hp -= self.third_skill_num * (1 + mod / 100)
         if target.hp <= 0:
             self.first_skill(target)
-        self.hp += self.third_skill_num
+        self.hp += self.third_skill_num * (1 + mod / 100)
 
     def make_it_good(self):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
         self.descriptions[2] = f"passive, when kill unit mana+={self.first_skill_num},\nit's simple atk"
         self.descriptions[3] = f'self.atk+={self.second_skill_num}, costs {self.second_skill_num * 2} hp'
-        self.descriptions[4] = f'atk, deals {self.third_skill_num}, self.hp+={self.third_skill_num}'
+        self.descriptions[4] = f'atk, deals {self.third_skill_num} damage, self.hp+={self.third_skill_num},' \
+                               f'\ncosts {self.manacost_third} mana'

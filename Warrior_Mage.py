@@ -6,25 +6,25 @@ from Unit import Unit
 class Warrior(Unit):  # armor dd
     def __init__(self):
         super().__init__(name="Warrior", hp=300, atk=30, mana=60, manacost_first=0, manacost_second=20,
-                         manacost_third=60, range=1.5, move=92, first_skill_num=15,
-                         second_skill_num=20, third_skill_num=990, description_of_atk='atk, deals 30 damage',
+                         manacost_third=60, range=1.5, move=2, first_skill_num=15,
+                         second_skill_num=20, third_skill_num=90, description_of_atk='atk, deals 30 damage',
                          description_of_first='armor 15, this is simple atk', description_of_second='self.atk += 20',
                          description_of_third='atk', picture_atk='img/Warrior.png',
                          picture_first='img/armor.png', picture_second='img/clean_sword.png',
                          picture_third='img/ultra_attack.png', immortal=0)
 
-    def first_skill(self, target):
-        self.attack(target)
+    def first_skill(self, target, mod=0):
+        self.attack(target, mod=mod)
 
     def take_damage(self, dmg):
         if dmg > self.first_skill_num:
             self.hp -= dmg - self.first_skill_num
 
-    def second_skill(self, target):
+    def second_skill(self, target, mod=0):
         self.atk += self.second_skill_num
 
-    def third_skill(self, target):
-        target.take_damage(self.third_skill_num)
+    def third_skill(self, target, mod=0):
+        target.take_damage(self.third_skill_num * (1 + mod / 100))
 
     def make_it_good(self):
         self.descriptions[1] = f'atk, deals {self.atk} damage'
@@ -42,13 +42,13 @@ class Mage(Unit):  # super dd
                          picture_atk='img/Mage.png', picture_first='img/magic_rain.png',
                          picture_second='img/immortal.png', picture_third='img/mana_up.png', immortal=0)
 
-    def first_skill(self, target):
-        target.take_damage(self.first_skill_num * randint(0, 1) * randint(0, 1))
+    def first_skill(self, target, mod=0):
+        target.take_damage((1 + mod / 100) * self.first_skill_num * randint(0, 1) * randint(0, 1))
 
-    def second_skill(self, target):
+    def second_skill(self, target, mod=0):
         target.immortal += self.second_skill_num
 
-    def third_skill(self, target):
+    def third_skill(self, target, mod=0):
         target.mana += self.third_skill_num
 
     def make_it_good(self):

@@ -1,3 +1,4 @@
+import sqlite3
 import sys
 from random import *
 
@@ -10,9 +11,11 @@ from Hunter_Summons_warlock import Warlock, Hunter
 from Rogue_Paladin import Rogue, Paladin
 from Warrior_Mage import Warrior, Mage
 
+window = 0
 TEAMS = 4
 EPS = 1e-6
 map_from_db = ''
+map_into_db = ''
 
 units = {
     1: Warrior,
@@ -26,7 +29,8 @@ units = {
     # 9: Priest
 
 }
-
+ranged = ['Hunter', 'Mage', 'Warlock']
+melee = ['Warrior', 'Rogue', 'Paladin']
 colours_of_teams = {
     1: 'QPushButton {background-color: red;}',
     2: 'QPushButton {background-color: blue;}',
@@ -47,12 +51,12 @@ description_of_units = {
 
 }
 landscape = {
-    1: 'grass',
-    2: 'forest',
-    3: 'hill',
-    4: 'destroyed_city',
-    5: 'lake',
-    6: 'mountain'
+    1: 'grass, no bonus',
+    2: 'forest, 10% to cancel your skill/atk',
+    3: 'hill, +10% damage for range attacking classes',
+    4: 'destroyed_city, +10% damage for melee attacking classes',
+    5: 'lake, unstoppable',
+    6: 'mountain, unstoppable, now only beautiful lake'
 }
 
 pictures_of_classes = {
@@ -145,7 +149,8 @@ class Window(QWidget):
             self.start_buttons[1].setText('From file')
             self.start_buttons[3].setText('Add to a database')
             self.start_buttons[4].setText('Stop')
-            self.console = QLabel('Here will be info about tiles', self)
+            self.console = QLabel('Here will be info about tiles                                   '
+                                  '                                        ', self)
             self.console.move(50, 900)
             self.right_console = QLabel(
                 'Here will be info about classes                                                                       '
@@ -231,6 +236,7 @@ class Window(QWidget):
             self.right_console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
             self.console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
             self.skill_console.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
+            self.turn_on_all.setStyleSheet("QLabel{font-size: 16pt; color: white;}")
 
     def draw_map(self):
         if self.sender().text() == 'Random':
@@ -320,29 +326,50 @@ class Window(QWidget):
             global map_from_db
             map_from_db = ''
             self.import_from()
-            while map_from_db == '':
-                pass
-            try:
-                parts_of_map = map_from_db.split(';')
-                x = int(len(self.mapa) ** 0.5)
-                if len(parts_of_map) == x:
-                    for i in range(x):
-                        for j in range(x):
-                            self.mapa[i * x + j].resize(80, 80)
-                            self.mapa[i * x + j].move(j * 80 + 50, i * 80 + 50)
-                            self.mapa[i * x + j].clicked.connect(self.mapButtons)
-                            self.map_landscape[i * x + j] = int(parts_of_map[i][j])
-                            self.mapa[i * x + j].setIcon(QtGui.QIcon(landscape_img[int(parts_of_map[i][j])]))
-                            self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
-                            self.map_points[self.mapa[i * x + j]] = landscape[int(parts_of_map[i][j])] + " " + str(
-                                j) + ";" + str(i)
-                    self.ismap = True
-                else:
-                    self.right_console.setText('Failed! Incorrect text')
-                    self.ismap = False
-            except:
+        if self.sender().text() == 'Add to a database':
+            global map_into_db
+            map_into_db, ok_pressed = QInputDialog.getText(self, "Введите карту",
+                                                           "Имя карты дано случайно, можно настроить позже в вкладке "
+                                                           "from database")
+            if ok_pressed:
+                self.add_into_db()
+
+    def add_into_db(self):
+        # Подключение к БД
+        global map_into_db
+        name = ''.join([chr(97 + randint(0, 26)) for i in range(randint(3, 10))])
+        con = sqlite3.connect("database for game.db")
+
+        # Создание курсора
+        cur = con.cursor()
+
+        # Выполнение запроса
+        cur.execute(f"""INSERT INTO maps(name, map_text) VALUES('{name}','{map_into_db}')""")
+        con.commit()
+        con.close()
+
+    def draw_from_db(self):
+        try:
+            parts_of_map = map_from_db.split(';')
+            x = int(len(self.mapa) ** 0.5)
+            if len(parts_of_map) == x:
+                for i in range(x):
+                    for j in range(x):
+                        self.mapa[i * x + j].resize(80, 80)
+                        self.mapa[i * x + j].move(j * 80 + 50, i * 80 + 50)
+                        self.mapa[i * x + j].clicked.connect(self.mapButtons)
+                        self.map_landscape[i * x + j] = int(parts_of_map[i][j])
+                        self.mapa[i * x + j].setIcon(QtGui.QIcon(landscape_img[int(parts_of_map[i][j])]))
+                        self.mapa[i * x + j].setIconSize(QtCore.QSize(80, 80))
+                        self.map_points[self.mapa[i * x + j]] = landscape[int(parts_of_map[i][j])] + " " + str(
+                            j) + ";" + str(i)
+                self.ismap = True
+            else:
                 self.right_console.setText('Failed! Incorrect text')
                 self.ismap = False
+        except:
+            self.right_console.setText('Failed! Incorrect text')
+            self.ismap = False
 
     def mapButtons(self):
         if self.ismove:
@@ -360,8 +387,8 @@ class Window(QWidget):
             self.skills[i].setIcon(QtGui.QIcon(player.pictures[i + 1]))
         self.right_console.setText(
             f'player {self.buttons_of_players.index(self.sender()) + 1}, {player.name},'
-            f' hp: {player.hp}, atk: {player.atk},\nmana: {player.mana}, range: {player.range},\nmove: {player.move},'
-            f'immortal: {player.immortal}')
+            f' hp: {int(player.hp)}, atk: {int(player.atk)},\nmana: {int(player.mana)}, range: {player.range},\nmove: '
+            f'{int(player.move)}, immortal: {player.immortal}')
         index = self.index_of_player()
         if index == self.buttons_of_players.index(self.sender()):
             self.move_button.move(1000, 500)
@@ -494,7 +521,22 @@ class Window(QWidget):
                 if (abs(coords_attacker[0] - coords_attacking[0]) ** 2 + abs(
                         coords_attacker[1] - coords_attacking[1]) ** 2) ** 0.5 - player_attack.range < EPS:
                     if player_attacking.immortal == 0:
-                        player_attack.skills[self.number_attack + 1](player_attacking)
+                        number_landscape = self.map_landscape[coords_attacker[1] * 10 + coords_attacker[0]]
+                        if number_landscape == 2:
+                            if randint(0, 9):
+                                player_attack.skills[self.number_attack + 1](player_attacking)
+                        elif number_landscape == 3:
+                            if player_attack.name in ranged:
+                                player_attack.skills[self.number_attack + 1](player_attacking, mod=10)
+                            else:
+                                player_attack.skills[self.number_attack + 1](player_attacking)
+                        elif number_landscape == 4:
+                            if player_attack.name in melee:
+                                player_attack.skills[self.number_attack + 1](player_attacking, mod=10)
+                            else:
+                                player_attack.skills[self.number_attack + 1](player_attacking)
+                        else:
+                            player_attack.skills[self.number_attack + 1](player_attacking)
                     self.isattack = False
                     player_attack.mana -= player_attack.manacosts[self.number_attack + 1]
                     if player_attacking.hp <= 0:
@@ -626,6 +668,7 @@ class SecondForm(QWidget):
         global map_from_db
         self.mapa = self.text_edit.toPlainText()
         map_from_db = self.mapa
+        window.draw_from_db()
         self.close()
 
 
